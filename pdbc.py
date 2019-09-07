@@ -2,48 +2,39 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox
 import json
+import requests
 import subprocess
 import os
+import time
 
-if "PBot" not in os.listdir(os.getcwd()):
-    os.makedirs("PBot")
-    wd = os.getcwd() + "/PBot"
+with open("languages.json", "r+") as languages_file:
+    lang = json.loads(languages_file.read())
+    lg = lang["lang"]
+
+bwd = os.getcwd()
+        
+def newbot(name):
+    os.makedirs(name)
+    wd = os.getcwd() + f"/{name}"
     os.chdir(wd)
-    os.makedirs("Cogs")
     variables_file = open("variables.json", "w")
     variables_file.write("{}")
     variables_file.close()
     config_file = open("config.json", "w")
-    config_file.write('{"language":"en"}')
+    config_file.write('{"token":"", "prefix":"!", "ownerid":"1"}')
     config_file.close()
     cmdsinfo_file = open("cmdsinfo.json", "w")
     cmdsinfo_file.write('{}')
     cmdsinfo_file.close()
-    languages_file = open("languages.json", "w")
-    languages_file.write('''{
-    "en": {
-        "editbot":"Edit Bot",
-        "options":"Options",
-        "warning":"Warning!",
-        "msgboxlang":"You must restart the app"
-    },
-    "pl": {
-        "editbot":"Edytuj Bota",
-        "options":"Ustawienia",
-        "warning":"Uwaga!",
-        "msgboxlang":"Musisz uruchomić ponownie aplikację"
-    }
-}''')
-    languages_file.close()
-else:
-    os.chdir(os.getcwd() + "/PBot")
-with open("config.json", "r") as config_file:
-    config = json.load(config_file)
-    lg = config["language"]
-with open("languages.json", "r+") as languages_file:
-    lang = json.load(languages_file)
-with open("cmdsinfo.json", "r+") as cmdsinfo_file:
-    cmdsinfo = json.load(cmdsinfo_file)
+
+def editbot(name):
+    os.chdir(os.getcwd() + f"/{name}")
+    with open("config.json", "r") as config_file:
+        global config
+        config = json.loads(config_file.read())
+    with open("cmdsinfo.json", "r+") as cmdsinfo_file:
+        global cmdsinfo
+        cmdsinfo = json.loads(cmdsinfo_file.read())
     
 LARGE_FONT= ("Verdana", 12)
 
@@ -56,6 +47,11 @@ def editjson(file, key, value):
         openedfile.close()
     if key == "language":
          messagebox.showwarning(lang[value]["warning"], lang[value]["msgboxlang"])
+
+
+                                                                    ############
+                                                                    ### MAIN ###
+                                                                    ############
 
          
 class Main(tk.Tk):
@@ -89,6 +85,14 @@ class Main(tk.Tk):
         menubar = frame.menubar()
         self.configure(menu=menubar)
 
+        if str(frame).endswith('startpage'):
+            os.chdir(bwd)
+
+
+                                                                    ##################
+                                                                    ### START PAGE ###
+                                                                    ##################
+
         
 class StartPage(tk.Frame):
 
@@ -96,14 +100,51 @@ class StartPage(tk.Frame):
         tk.Frame.__init__(self,parent)
         controller.title("Python Discord Bot Creator")
         controller.geometry("700x500")
-        label = tk.Label(self, text="Start Page", font=LARGE_FONT)
-        label.pack()
+        
+        lb_startpage = tk.Label(self, text="Strona Główna", font=LARGE_FONT)
+        lb_startpage.grid(row=0, column=0)
 
-        button = tk.Button(self, text=lang[lg]["editbot"], command=lambda: controller.show_frame(BotEditor))
-        button.pack()
+        lb_botname = tk.Label(self, text="Nazwa: ")
+        lb_botname.grid(row=1, column=0, pady=30)
+        self.ent_botname = tk.Entry(self)
+        self.ent_botname.grid(row=1, column=1)
+        btn_editbot = tk.Button(self, text=lang[lg]["editbot"], command=lambda: clseditbot(self, controller))
+        btn_editbot.grid(row=1, column=2, padx=20)
+        btn_newbot = tk.Button(self, text="Nowy bot", command=lambda: clsnewbot(self, controller))
+        btn_newbot.grid(row=1, column=3, padx=20)
 
-        button2 = tk.Button(self, text=lang[lg]["options"], command=lambda: controller.show_frame(OptionsPage))
-        button2.pack()
+        btn_options = tk.Button(self, text=lang[lg]["options"], command=lambda: controller.show_frame(OptionsPage))
+        btn_options.grid(row=2, column=0, pady=30)
+
+        tk.Label(self, text="Developer: Montarex23#3635").grid(row=3, pady=30)
+        tk.Label(self, text="Discord Server: https://discord.gg/NKumSM4").grid(row=4)
+
+        tk.Label(self, text="0.0.2").grid(row=5, pady=50)
+
+
+        def clsnewbot(self, controller):
+            StartPage.name = self.ent_botname.get()
+            if StartPage.name != "":
+                bots = os.listdir(os.getcwd())
+                if StartPage.name not in bots:
+                    newbot(StartPage.name)
+                    controller.show_frame(BotEditor)
+                else:
+                    messagebox.showerror("Błąd", "Taki bot już istnieje")
+            else:
+                messagebox.showerror("Błąd", "Nazwa nie została podana")
+
+        def clseditbot(self, controller):
+            StartPage.name = self.ent_botname.get()
+            if StartPage.name != "":
+                bots = os.listdir(os.getcwd())
+                if StartPage.name in bots:
+                    editbot(StartPage.name)
+                    controller.show_frame(BotEditor)
+                else:
+                    messagebox.showerror("Błąd", "Taki bot nie istnieje")
+            else:
+                messagebox.showerror("Błąd", "Nazwa nie została podana")
 
     def menubar(self):
         self.menu = tk.Menu(self) 
@@ -120,45 +161,131 @@ class StartPage(tk.Frame):
         return self.menu
 
 
+                                                                    ##################
+                                                                    ### BOT EDITOR ###
+                                                                    ##################
+
+
 class BotEditor(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Bot", font=LARGE_FONT).grid(row=0)
+        label = tk.Label(self, text="Bot", font=LARGE_FONT).grid(row=0, column=1)
 
-        cwd = os.getcwd()
-        os.chdir(cwd + "/Cogs")
-        i = 0
-        for file in os.listdir(os.getcwd()):
-            if str(file).endswith('.py'):
-                i = i + 1
-        os.chdir(cwd)
+        try:
+            i = 0
+            for file in os.listdir(os.getcwd()):
+                if str(file).endswith('.py'):
+                    i = i + 1
+        except:
+            nothing = 1
+
+        BotEditor.edit = False
+        BotEditor.cmdname = "none"
+
+        self.label1 = tk.Label(self)
+        self.label1.grid(row=1)
+        self.label1.configure(text=f"Ładowanie")
+
+        tk.Label(self, text="-" * 120).grid(row=2, column=0, columnspan=4)
+
+        label2 = tk.Label(self, text="Token: ").grid(row=3, column=0)
+        self.ent_token = tk.Entry(self, show="*", width=50)
+        self.ent_token.grid(row=3, column=1)
+        #btn_tokenhelp = tk.Button(self, text="?", command=lambda: messagebox.showinfo("a", "b"), width=3).grid(row=3, column=2)
+        label3 = tk.Label(self, text="Prefix: ").grid(row=4, column=0)
+        self.ent_prefix = tk.Entry(self, width=15)
+        self.ent_prefix.grid(row=4, column=1)
+        self.ent_prefix.delete(0,"end")
+        try:
+            self.ent_prefix.insert(0,config["prefix"])
+        except:
+            self.ent_prefix.insert(0,"Ładowanie")
+        lb_ownerid = tk.Label(self, text="ID właściciela: ").grid(row=5, column=0)
+        self.ent_ownerid = tk.Entry(self, width=30)
+        self.ent_ownerid.grid(row=5, column=1)
+        self.ent_ownerid.delete(0,"end")
+        try:
+            self.ent_ownerid.insert(0,config["ownerid"])
+        except:
+            self.ent_prefix.insert(0,"Ładowanie")
+        btn_save = tk.Button(self, text="Save", command=lambda: self.save_config(), width=10).grid(row=6)
+
+        tk.Label(self, text="-" * 120).grid(row=7, column=0, columnspan=4)
+
+        tk.Label(self, text="Nazwa komendy do edytowania:").grid(row=8, column=0)
+        self.ent_cmdtoedit = tk.Entry(self, width=40)
+        self.ent_cmdtoedit.grid(row=8, column=1)
+        tk.Button(self, text="Edit command", command=lambda: editcmd(self, controller, self.ent_cmdtoedit.get())).grid(row=8,column=2)
+
+        btn_newcmd = tk.Button(self, text="New command", command=lambda: controller.show_frame(CommandEditor)).grid(row=9,pady=10)
+
+        tk.Label(self, text="-" * 120).grid(row=10, column=0, columnspan=4)
         
-        label1 = tk.Label(self, text=f"Komendy: {i}").grid(row=1)
+        btn_runbot = tk.Button(self, text="Run bot", command=lambda: runbot(self, StartPage.name)).grid(row=11)
 
-        label2 = tk.Label(self, text="Token: ").grid(row=2, column=0)
-        entry = tk.Entry(self, show="*", width=50).grid(row=2, column=1)
+        btn_backtohome = tk.Button(self, text="Back to Home", command=lambda: controller.show_frame(StartPage))
+        btn_backtohome.grid(row=12, pady=100)
 
-        button1 = tk.Button(self, text="Run bot", command=lambda: os.system(f"{os.getcwd()}PBot/main.py")).grid(row=3)
+        self.update_frame()
 
-        button1 = tk.Button(self, text="Back to Home", command=lambda: controller.show_frame(StartPage)).grid(row=4)
+        def editcmd(self, controller, cmdtoedit):
+            BotEditor.edit = True
+            BotEditor.cmdname = cmdtoedit
+            controller.show_frame(CommandEditor)
 
-        button2 = tk.Button(self, text="Nowa Komenda", command=lambda: controller.show_frame(CommandEditor)).grid(row=5)
+        def runbot(self, name):
+            os.chdir('..')
+            open("runbot.txt", "w").write(name)
+            subprocess.Popen(["python.exe", "runbot.py"])
+            os.chdir(os.getcwd() + f"/{StartPage.name}")
+
+    def update_frame(self):
+        try:
+            i = len(cmdsinfo.keys())
+        except:
+            i = "Ładowanie..."
+        self.label1.configure(text=f"Komendy: {i}")
+        self.label1.after(1000, self.update_frame)
+        global repeat
+        try:
+            if repeat == True:
+                nothing = 2
+        except:
+            repeat = True
+        if repeat == True:
+            self.ent_prefix.delete(0,"end")
+            try:
+                self.ent_prefix.insert(0,config["prefix"])
+                repeat = False
+            except Exception as e:
+                self.ent_prefix.insert(0,"Ładowanie...")
+
+            self.ent_ownerid.delete(0,"end")
+            try:
+                self.ent_ownerid.insert(0,config["ownerid"])
+                repeat = False
+            except Exception as e:
+                self.ent_ownerid.insert(0,"Ładowanie...")
+
+    def save_config(self):
+        if self.ent_token.get() != "":
+            editjson("config", "token", self.ent_token.get())
+        if self.ent_prefix.get() != "":
+            editjson("config", "prefix", self.ent_prefix.get())
 
     def menubar(self):
         self.menu = tk.Menu(self) 
         cmdsmenu = tk.Menu(self.menu)
         self.menu.add_cascade(label="Komendy", menu = cmdsmenu)
-        cwd = os.getcwd()
-        for cmd in os.listdir(cwd + "/Cogs"):
-            if str(cmd).endswith(".py"):
-                cmdsmenu.add_command(label = str(cmd).split('.')[0], command=lambda: print("xD"))
-        os.chdir(cwd)
-        cmdsmenu.add_separator()
-        cmdsmenu.add_command(label = "Nowa komenda", command=lambda: Main.show_frame(self, CommandEditor))       
+        for key in cmdsinfo.keys():
+            cmdsmenu.add_command(label = str(key).split('.')[0], command=lambda: print("xD"))
         return self.menu
 
 
+                                                                    ####################
+                                                                    ### OPTIONS PAGE ###
+                                                                    ####################
 
 class OptionsPage(tk.Frame):
 
@@ -173,7 +300,7 @@ class OptionsPage(tk.Frame):
         rb_var = tk.StringVar()
         rb_female = tk.Radiobutton(self, variable = rb_var, value = "en", text = "English", command=lambda: editjson("config", "language", "en"))
         rb_male = tk.Radiobutton(self, variable = rb_var, value = "pl", text = "Polski", command=lambda: editjson("config", "language", "pl"))
-        rb_var.set(config["language"])
+        rb_var.set(lang["lang"])
         
         rb_female.pack()
         rb_male.pack()
@@ -193,38 +320,70 @@ class OptionsPage(tk.Frame):
         return self.menu
 
 
+                                                                    ######################
+                                                                    ### COMMAND EDITOR ###
+                                                                    ######################
+
+
 class CommandEditor(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self,parent)
-        label0 = tk.Label(self, text="Command Editor", font=LARGE_FONT).grid(row=0, column=1)
-        label = tk.Label(self, text="Nazwa komendy:").grid(row=1, column=0)
-        cmdname = tk.Entry(self, width=40)
-        cmdname.grid(row=2, column=0)
+        tk.Label(self, text="Command Editor", font=LARGE_FONT).grid(row=0, column=1)
+        tk.Label(self, text="Nazwa komendy:").grid(row=1, column=0)
+        ent_cmdname = tk.Entry(self, width=40)
+        ent_cmdname.grid(row=3, column=0)
 
-        label = tk.Label(self, text="Output komendy:").grid(row=3, column=0)
-        textbox = tk.Text(self, width = 80, height = 30)
-        textbox.grid(row=4, column=0)
+        tk.Label(self, text="Output komendy:").grid(row=4, column=0)
+        tb_output = tk.Text(self, width = 80, height = 30)
+        tb_output.grid(row=5, column=0)
+
+        try:
+            if BotEditor.edit == True:
+                BotEditor.edit = False
+                ent_cmdname.delete(0,"end")
+                ent_cmdname.insert(0,BotEditor.cmdname)
+                tb_output.delete(0,"end")
+                tb_output.insert(0,cmdsinfo[BotEditor.cmdname])
+        except Exception as e:
+            print(e)
+            nothing = 3
         
-        label2 = tk.Label(self, text="* - Opcjonalne\nAkcje:").grid(row=1, column=2)
+        tk.Label(self, text="* - Opcjonalne\nAkcje:").grid(row=2, column=2)
         self.treeview = ttk.Treeview(self)
 
-        send = ["Wysyła wiadomośc", "tekst - Tekst wiadomości"]
-        self.add_values(send, ".send:tekst")
-        createChannel = ["Tworzy kanał", "typ - voice/text", "nazwa - nazwa kanału"]
-        self.add_values(createChannel, ".createChannel:typ, nazwa")
-        script = ["! DLA ZAAWANSOWANYCH !", "Dodaje linijke do kodu komendy","linijka - linijka do dodania do kodu"]
-        self.add_values(script, ".script:linijka")
 
+        send = ["Wysyła wiadomośc", "tekst - Tekst wiadomości"]
+        createChannel = ["Tworzy kanał", "typ - voice/text", "nazwa - nazwa kanału"]
+        script = ["DLA ZAAWANSOWANYCH", "Evaluje linijke","linijka - linijka"]
+        deleteMessage = ["Usuwa wiadomość", "msg - usermsg/botmsg/id", "  usermsg - komenda", "  botmsg - ostatnia wiad. bota", "  id - id wiadomości"]
+        log = ["Zapisuje dany tekst", "tekst - Tekst"]
+        args = ["Argumenty z wiadomości", "arg - numer argumentu", "var - Nazwa zmiennej"] #todo
+        
+        self.add_values(send, ".send:tekst")
+        self.add_values(deleteMessage, ".deleteMessage:msg")
+        self.add_values(log, ".log:tekst")
+        self.add_values(createChannel, ".createChannel:typ, nazwa")
+        #self.add_values(args, ".args:arg = var")
+        self.add_values(script, ".script:linijka")
+        
         
         self.sb_treeview = tk.Scrollbar(self)
         self.treeview.config(yscrollcommand = self.sb_treeview.set)
         self.sb_treeview.config(command = self.treeview.yview)
         self.sb_treeview.place(in_ = self.treeview, relx = 1., y = 0, relheight = 1.)
-        self.treeview.grid(row=2, column=2, rowspan=3)
+        self.treeview.grid(row=3, column=2, rowspan=3)
 
-        ok = tk.Button(self, text="Create", width=20, command=lambda:CommandEditor.create(self, cmdname.get(), textbox.get("1.0","end")))
-        ok.grid(row=5, column=1)
+        btn_create = tk.Button(self, text="Create/Edit", width=20, command=lambda:createbutton())
+        btn_create.grid(row=6, column=1, pady=20)
+
+        btn_back = tk.Button(self, text="Back", width=20, command=lambda:controller.show_frame(BotEditor))
+        btn_back.grid(row=7, column=1, pady=30)
+
+        def createbutton():
+            CommandEditor.create(self, ent_cmdname.get(), tb_output.get("1.0","end"))
+            controller.show_frame(BotEditor)
+            
 
     def add_values(self, values, name):
         value = self.treeview.insert("", 'end', name, text = name)
@@ -238,44 +397,13 @@ class CommandEditor(tk.Frame):
             
         output = output.split('''
 ''')
-        cmdscript = ""
-        for line in output:
-            if line.startswith('.'):
-                if line.lower().startswith('.send:'):
-                    cmdscript = cmdscript + f"\n        await ctx.send('{line[6:]}')"
-                elif line.lower().startswith('.createchannel:'):
-                    toscript = line[15:]
-                    if ", " in toscript:
-                        toscript = toscript.split(', ')
-                    elif "," in toscript:
-                        toscript = toscript.split(',')
-                    else:
-                        return
-                    cmdscript = cmdscript + f"\n        await ctx.message.guild.create_{toscript[0]}_channel('{toscript[1]}')"
-                elif line.lower().startswith('.script:'):
-                    cmdscript = cmdscript + f"\n        {line[8:]}"
-                    
-        cmdscript = f'''import discord
-from discord.ext import commands
-
-
-class {cmdname}Cog(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
-    @commands.command(name="{cmdname}")
-    async def {cmdname}cmd(self, ctx, *args):
-        {cmdscript}
-
-def setup(bot):
-    bot.add_cog({cmdname}Cog(bot))'''
-
-        cwd = os.getcwd()
-        os.chdir(cwd + "/Cogs")
-        with open(f"{cmdname}.py", "w", encoding='utf-8') as newcmdfile:
-            newcmdfile.write(cmdscript)
-            newcmdfile.close()
-        os.chdir(cwd)
+        cmdscript = "\n".join(output)
+        
+        cmdsinfo[cmdname] = cmdscript
+        with open("cmdsinfo.json", "w") as cmdsinfo_file:
+            json.dump(cmdsinfo, cmdsinfo_file)
+            cmdsinfo_file.close()
+        
         
     def menubar(self):
         self.menu = tk.Menu(self) 
