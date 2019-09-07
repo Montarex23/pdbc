@@ -1,0 +1,17 @@
+{
+	"lang":"pl",
+    "en": {
+        "editbot":"Edit Bot",
+        "options":"Options",
+        "warning":"Warning!",
+        "msgboxlang":"You must restart the app",
+        "loggedmsg":"Logged in as"
+    },
+    "pl": {
+        "editbot":"Edytuj Bota",
+        "options":"Ustawienia",
+        "warning":"Uwaga!",
+        "msgboxlang":"Musisz uruchomiæ ponownie aplikacjê",
+        "loggedmsg":"Zalogowano jako"
+    }
+}
