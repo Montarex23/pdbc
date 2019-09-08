@@ -21,11 +21,17 @@ def newbot(name):
     variables_file.write("{}")
     variables_file.close()
     config_file = open("config.json", "w")
-    config_file.write('{"language:"en", "token":"", "prefix":"!", "ownerid":"1"}')
+    config_file.write('{"token":"", "prefix":"!", "ownerid":"1"}')
     config_file.close()
+    with open("config.json", "r") as config_file:
+        global config
+        config = json.loads(config_file.read())
     cmdsinfo_file = open("cmdsinfo.json", "w")
     cmdsinfo_file.write('{}')
     cmdsinfo_file.close()
+    with open("cmdsinfo.json", "r+") as cmdsinfo_file:
+        global cmdsinfo
+        cmdsinfo = json.loads(cmdsinfo_file.read())
 
 def editbot(name):
     os.chdir(os.getcwd() + f"/{name}")
