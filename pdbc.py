@@ -38,6 +38,9 @@ def editbot(name):
     
 LARGE_FONT= ("Verdana", 12)
 
+global iscmdedit
+iscmdedit = False
+
 def editjson(file, key, value):
     with open(file + ".json", "r+") as openedfile:
         data = json.loads(openedfile.read())
@@ -228,8 +231,10 @@ class BotEditor(tk.Frame):
         self.update_frame()
 
         def editcmd(self, controller, cmdtoedit):
-            BotEditor.edit = True
-            BotEditor.cmdname = cmdtoedit
+            global iscmdedit
+            iscmdedit = True
+            global cmdnameedit
+            cmdnameedit = cmdtoedit
             controller.show_frame(CommandEditor)
 
         def runbot(self, name):
@@ -271,6 +276,8 @@ class BotEditor(tk.Frame):
             editjson("config", "token", self.ent_token.get())
         if self.ent_prefix.get() != "":
             editjson("config", "prefix", self.ent_prefix.get())
+        if self.ent_ownerid.get() != "":
+            editjson("config", "ownerid", self.ent_ownerid.get())
 
     def menubar(self):
         self.menu = tk.Menu(self) 
@@ -329,23 +336,12 @@ class CommandEditor(tk.Frame):
         tk.Frame.__init__(self,parent)
         tk.Label(self, text=lang[lg]["cmdeditor"], font=LARGE_FONT).grid(row=0, column=1)
         tk.Label(self, text=lang[lg]["cmdname"]).grid(row=1, column=0)
-        ent_cmdname = tk.Entry(self, width=40)
-        ent_cmdname.grid(row=3, column=0)
+        self.ent_cmdname = tk.Entry(self, width=40)
+        self.ent_cmdname.grid(row=3, column=0)
 
         tk.Label(self, text=lang[lg]["cmdoutput"]).grid(row=4, column=0)
-        tb_output = tk.Text(self, width = 80, height = 30)
-        tb_output.grid(row=5, column=0)
-
-        try:
-            if BotEditor.edit == True:
-                BotEditor.edit = False
-                ent_cmdname.delete(0,"end")
-                ent_cmdname.insert(0,BotEditor.cmdname)
-                tb_output.delete(0,"end")
-                tb_output.insert(0,cmdsinfo[BotEditor.cmdname])
-        except Exception as e:
-            print(e)
-            nothing = 3
+        self.tb_output = tk.Text(self, width = 80, height = 30)
+        self.tb_output.grid(row=5, column=0)
         
         tk.Label(self, text=lang[lg]["actions"]).grid(row=2, column=2)
         self.treeview = ttk.Treeview(self)
@@ -393,8 +389,21 @@ class CommandEditor(tk.Frame):
         btn_back.grid(row=7, column=1, pady=30)
 
         def createbutton():
-            CommandEditor.create(self, ent_cmdname.get(), tb_output.get("1.0","end"))
+            CommandEditor.create(self, self.ent_cmdname.get(), self.tb_output.get("1.0","end"))
             controller.show_frame(BotEditor)
+
+        self.update_frame()
+
+    def update_frame(self):
+        global iscmdedit
+        global cmdnameedit
+        if iscmdedit == True:
+            iscmdedit = False
+            self.ent_cmdname.delete(0,"end")
+            self.ent_cmdname.insert(0,cmdnameedit)
+            self.tb_output.delete(0.1,"end")
+            self.tb_output.insert(0.1,cmdsinfo[cmdnameedit])
+        self.ent_cmdname.after(1000, self.update_frame)
             
 
     def add_values(self, values, name):
