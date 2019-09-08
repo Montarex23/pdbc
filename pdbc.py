@@ -45,7 +45,7 @@ def editjson(file, key, value):
         openedfile.seek(0)
         json.dump(data, openedfile)
         openedfile.close()
-    if key == "language":
+    if key == "lang":
          messagebox.showwarning(lang[value]["warning"], lang[value]["msgboxlang"])
 
 
