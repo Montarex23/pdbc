@@ -58,7 +58,7 @@ async def execfunc(bot, message, cmd):
 
 @bot.event
 async def on_ready():
-    print(f'{lang[config["language"]]["loggedmsg"]} {bot.user.name} - {bot.user.id}')
+    print(f'{lang[lang["lang"]]["loggedmsg"]} {bot.user.name} - {bot.user.id}')
 
 @bot.event
 async def on_message(message):
@@ -78,9 +78,14 @@ async def on_message(message):
 		cmdscriptjson = cmdsinfo[cmd[0]]
 		cmdscriptjson = cmdscriptjson.split("\n")
 		cmdscript = ""
+		cmdscript = cmdscript + f"""\nargs = {message.content.split(' ')}"""
 		for line in cmdscriptjson:
 			if line.lower().startswith(".send"):
-				cmdscript = cmdscript + f"""\nchannel = message.channel
+				if line[6:].startswith('%') and line[6:].endswith('%'):
+					cmdscript = cmdscript + f"""\nchannel = message.channel
+botmsg = await channel.send({line[6:][1:len(line[6:]) - 1]})"""
+				else:
+					cmdscript = cmdscript + f"""\nchannel = message.channel
 botmsg = await channel.send('{line[6:]}')"""
 			elif line.lower().startswith('.createchannel:'):
 				toscript = line[15:]
@@ -105,6 +110,22 @@ botmsg = await channel.send('{line[6:]}')"""
 			elif line.lower().startswith('.log:'):
 				cmdscript = cmdscript + f"\nprint('{line[5:]}')"
 				cmdscript = cmdscript + f"\nopen('log.txt', 'a').write('''\n{line[5:]}''')"
+			elif line.lower().startswith('.args:'):
+				argsline = []
+				if " = " in line[6:]:
+					argsline = line[6:].split(" = ")
+				elif "= " in line[6:]:
+					argsline = line[6:].split("= ")
+				elif " =" in line[6:]:
+					argsline = line[6:].split(" =")
+				elif "=" in line[6:]:
+					argsline = line[6:].split("=")
+				else:
+					nothing = 1
+				if not argsline == []:
+					number = int(argsline[0])
+					name = argsline[1]
+					cmdscript = cmdscript + f"\n{name} = args[{str(number)}]"
 			else:
 				cmdscript = cmdscript + f"\n#{line}"
 		await execfunc(bot, message, cmdscript)
