@@ -353,33 +353,33 @@ class CommandEditor(tk.Frame):
         self.treeview = ttk.Treeview(self)
 
         if lg == "pl":
-            send = ["Wysyła wiadomośc", "tekst - Tekst wiadomości"]
+            send = ["Wysyła wiadomośc", "tekst - Tekst wiadomości", "var - %zmienna%"]
             createChannel = ["Tworzy kanał", "typ - voice/text", "nazwa - nazwa kanału"]
             script = ["DLA ZAAWANSOWANYCH", "Evaluje linijke","linijka - linijka pythona"]
             deleteMessage = ["Usuwa wiadomość", "msg - usermsg/botmsg/id", "  usermsg - komenda", "  botmsg - ostatnia wiad. bota", "  id - id wiadomości"]
             log = ["Zapisuje dany tekst", "tekst - Tekst"]
-            args = ["Argumenty z wiadomości", "arg - numer argumentu", "var - Nazwa zmiennej"] #todo
+            args = ["Argumenty z wiadomości", "arg - numer argumentu", "var - Nazwa zmiennej"]
         
             self.add_values(send, ".send:tekst")
             self.add_values(deleteMessage, ".deleteMessage:msg")
             self.add_values(log, ".log:tekst")
             self.add_values(createChannel, ".createChannel:typ, nazwa")
-            #self.add_values(args, ".args:arg = var")
+            self.add_values(args, ".args:arg = var")
             self.add_values(script, ".script:linijka")
 
         elif lg == "en":
-            send = ["Sends message", "text - Message text"]
+            send = ["Sends message", "text - Message text", "var - %variable%"]
             createChannel = ["Creates channel", "type - voice/text", "name - channel name"]
             script = ["ADVANCED", "Evals line","line - python line"]
             deleteMessage = ["Deletes message", "msg - usermsg/botmsg/id", "  usermsg - command", "  botmsg - last bot message", "  id - message id"]
             log = ["Logs text", "text - text"]
-            args = ["Command arguments", "arg - argument number", "var - variable name"] #todo
+            args = ["Command arguments", "arg - argument number", "var - variable name"]
         
-            self.add_values(send, ".send:text")
+            self.add_values(send, ".send:text/var")
             self.add_values(deleteMessage, ".deleteMessage:msg")
             self.add_values(log, ".log:text")
             self.add_values(createChannel, ".createChannel:type, name")
-            #self.add_values(args, ".args:arg = var")
+            self.add_values(args, ".args:arg = var")
             self.add_values(script, ".script:line")
         
         self.sb_treeview = tk.Scrollbar(self)
