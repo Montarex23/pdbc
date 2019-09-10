@@ -82,11 +82,9 @@ async def on_message(message):
 		for line in cmdscriptjson:
 			if line.lower().startswith(".send"):
 				if line[6:].startswith('%') and line[6:].endswith('%'):
-					cmdscript = cmdscript + f"""\nchannel = message.channel
-botmsg = await channel.send({line[6:][1:len(line[6:]) - 1]})"""
+					cmdscript = cmdscript + f"\nbotmsg = await msgchannel.send({line[6:][1:len(line[6:]) - 1]})"
 				else:
-					cmdscript = cmdscript + f"""\nchannel = message.channel
-botmsg = await channel.send('{line[6:]}')"""
+					cmdscript = cmdscript + f"\nbotmsg = await msgchannel.send('{line[6:]}')"
 			elif line.lower().startswith('.createchannel:'):
 				toscript = line[15:]
 				if ", " in toscript:
@@ -123,9 +121,22 @@ botmsg = await channel.send('{line[6:]}')"""
 				else:
 					nothing = 1
 				if not argsline == []:
-					number = int(argsline[0])
-					name = argsline[1]
-					cmdscript = cmdscript + f"\n{name} = args[{str(number)}]"
+					if argsline[1].endswith('-'):
+						number = f"{argsline[1].strip('-')}:len(args)"
+					else:
+						number = int(argsline[1])
+					name = argsline[0]
+					cmdscript = cmdscript + f"""\n{name} = args[{str(number)}]
+if type({name}) == list:
+	{name} = ' '.join({name})"""
+			elif line.lower().startswith('.setchannel:'):
+				if line[12:].strip(' ').lower() == "cmd":
+					msgchannel = "message.channel"
+				elif line[12:].startswith('%') and line[12:].endswith('%'):
+					msgchannel = f"bot.get_channel(int({line[12:][1:len(line[12:]) - 1]}))"
+				else:
+					msgchannel = f"bot.get_channel(int({line[12:][1:len(line[12:]) - 1]}))"
+				cmdscript = cmdscript + f"\nmsgchannel = {msgchannel}"
 			else:
 				cmdscript = cmdscript + f"\n#{line}"
 		await execfunc(bot, message, cmdscript)
