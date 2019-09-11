@@ -353,20 +353,30 @@ class CommandEditor(tk.Frame):
         self.treeview = ttk.Treeview(self)
 
         if lg == "pl":
-            send = ["Wysyła wiadomośc", "tekst - Tekst wiadomości", "var - %zmienna%"]
-            setChannel = ["Ustawia kanał", "channel - cmd/var/id" , "  cmd - kanał komendy", "  var - %zmienna%", "  id - id kanału"]
+            send = ["Wysyła wiadomośc", "tejst - tekst/var", "  tekst - Tekst wiadomości", "  var - %zmienna%"]
+            setChannel = ["Ustawia kanał", "channel - cmd/var/id" , " cmd - kanał komendy", " var - %zmienna%", " id - id kanału"]
             createChannel = ["Tworzy kanał", "typ - voice/text", "nazwa - nazwa kanału"]
             script = ["DLA ZAAWANSOWANYCH", "Evaluje linijke","linijka - linijka pythona"]
             deleteMessage = ["Usuwa wiadomość", "msg - usermsg/botmsg/id", "  usermsg - komenda", "  botmsg - ostatnia wiad. bota", "  id - id wiadomości"]
             log = ["Zapisuje dany tekst", "tekst - Tekst"]
             args = ["Argumenty z wiadomości", "var - Nazwa zmiennej", "arg - numer argumentu", "  arg- - wszystkie argumnety", "po numerze argumentu"]
-        
+            clearMentions = ["Usuwa wzmianki w wiad.", "var - %zmienna%"]
+            embed = ["Tworzy embed","title - tytuł"]
+            embedField = ["Dodaje pole embeda", "name - nazwa", "value = zawartość"]
+            embedFooter = ["Ustawia stopke embeda", "text - tekst"]
+            sendEmbed = ["Wysyła embed"]
+
             self.add_values(send, ".send:tekst")
-            self.add_values(setChannel, ".setchannel:channel")
+            self.add_values(setChannel, ".setChannel:channel")
             self.add_values(deleteMessage, ".deleteMessage:msg")
+            self.add_values(embed, ".embed:title")
+            self.add_values(embedField, ".embedField:name,,,value")
+            self.add_values(embedFooter, ".embedFooter:text")
+            self.add_values(sendEmbed, ".sendEmbed")
             self.add_values(log, ".log:tekst")
             self.add_values(createChannel, ".createChannel:typ, nazwa")
             self.add_values(args, ".args:var = arg")
+            self.add_values(clearMentions, ".clearMentions:var")
             self.add_values(script, ".script:linijka")
 
         elif lg == "en":
@@ -377,13 +387,23 @@ class CommandEditor(tk.Frame):
             deleteMessage = ["Deletes message", "msg - usermsg/botmsg/id", "  usermsg - command", "  botmsg - last bot message", "  id - message id"]
             log = ["Logs text", "text - text"]
             args = ["Command arguments", "var - variable name", "arg - argument number", "  arg- - all args after", "given arg"]
+            clearMentions = ["Clear mentions from msg", "var - %variable%"]
+            embed = ["Creates embed","title - title"]
+            embedField = ["Adds field to embed", "name - name", "value = content"]
+            embedFooter = ["Sets embed footer", "text - text"]
+            sendEmbed = ["Sends embed"]
         
             self.add_values(send, ".send:text")
             self.add_values(setChannel, ".setchannel:channel")
             self.add_values(deleteMessage, ".deleteMessage:msg")
+            self.add_values(embed, ".embed:title")
+            self.add_values(embedField, ".embedField:name,,,value")
+            self.add_values(embedFooter, ".embedFooter:text")
+            self.add_values(sendEmbed, ".sendEmbed")
             self.add_values(log, ".log:text")
             self.add_values(createChannel, ".createChannel:type, name")
             self.add_values(args, ".args:var = arg")
+            self.add_values(clearMentions, ".clearmentions:var")
             self.add_values(script, ".script:line")
         
         self.sb_treeview = tk.Scrollbar(self)
