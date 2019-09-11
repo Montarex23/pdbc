@@ -3,6 +3,7 @@ import os
 import json
 import traceback
 import discord
+from discord import Embed
 import ast
 from discord.ext import commands
 
@@ -39,6 +40,7 @@ def insert_returns(body):
         insert_returns(body[-1].body)
 
 async def execfunc(bot, message, cmd):
+	print(cmd)
 	fn_name = "_eval_expr"
 	cmd = cmd.strip("` ")
 	cmd = "\n".join(f"    {i}" for i in cmd.splitlines())
@@ -50,6 +52,7 @@ async def execfunc(bot, message, cmd):
 		'bot': bot,
 		'message': message,
 		'discord': discord,
+		'Embed': Embed,
 		'commands': commands,
 		'__import__': __import__
 	}
@@ -79,8 +82,9 @@ async def on_message(message):
 		cmdscriptjson = cmdscriptjson.split("\n")
 		cmdscript = ""
 		cmdscript = cmdscript + f"""\nargs = {message.content.split(' ')}"""
+		cmdscript = cmdscript + f"\nmsgchannel = message.channel"
 		for line in cmdscriptjson:
-			if line.lower().startswith(".send"):
+			if line.lower().startswith(".send:"):
 				if line[6:].startswith('%') and line[6:].endswith('%'):
 					cmdscript = cmdscript + f"\nbotmsg = await msgchannel.send({line[6:][1:len(line[6:]) - 1]})"
 				else:
@@ -137,6 +141,17 @@ if type({name}) == list:
 				else:
 					msgchannel = f"bot.get_channel(int({line[12:][1:len(line[12:]) - 1]}))"
 				cmdscript = cmdscript + f"\nmsgchannel = {msgchannel}"
+			elif line.lower().startswith('.clearmentions:'):
+				if line[15:].startswith('%') and line[15:].endswith('%'):
+					cmdscript = cmdscript + f"\n{line[15:][1:len(line[15:]) - 1]} = discord.utils.escape_mentions({line[15:][1:len(line[15:]) - 1]})"
+			elif line.lower().startswith('.embed:'):
+				cmdscript = cmdscript + f"\nembed = Embed(title='{line[7:]}')"
+			elif line.lower().startswith('.embedfield:'):
+				cmdscript = cmdscript + f"\nembed.add_field(name='{line[12:].split(',,,')[0]}', value='{line[12:].split(',,,')[1]}', inline=False)"
+			elif line.lower().startswith('.embedfooter:'):
+				cmdscript = cmdscript + f"\nembed.set_footer(text='{line[13:]}')"
+			elif line.lower().startswith('.sendembed'):
+				cmdscript = cmdscript + f"\nawait msgchannel.send(embed=embed)"
 			else:
 				cmdscript = cmdscript + f"\n#{line}"
 		await execfunc(bot, message, cmdscript)
