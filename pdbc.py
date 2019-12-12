@@ -148,7 +148,7 @@ class StartPage(tk.Frame):
                     newbot(StartPage.name)
                     controller.show_frame(BotEditor)
                 else:
-                    messagebox.showerror("Błąd", "alreadyexists")
+                    messagebox.showerror("Błąd", "Taki bot już istnieje")
             else:
                 messagebox.showerror("Błąd", "Nazwa bota nie może być pusta")
 
