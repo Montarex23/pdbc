@@ -168,7 +168,7 @@ class StartPage(tk.Frame):
         self.menu = tk.Menu(self) 
         cascade = tk.Menu(self.menu)
         self.menu.add_cascade(label="Program", menu = cascade)        
-        cascade.add_command(label = "Developer", command=lambda: popup("Montarex23#3653", "text"))
+        cascade.add_command(label = "Developer", command=lambda: popup("Montarex23#6909 + Nimplex#6232", "text"))
         cascade.add_command(label = "Discord server", command=lambda: popup("https://discord.gg/NKumSM4", "link"))
         return self.menu
 
